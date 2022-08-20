@@ -1,6 +1,9 @@
 const { User } = require('../models');
 
 const userController = {
+    
+  // USERS
+
   // get all users
   getAllUser(req, res) {
     User.find({})
@@ -21,7 +24,7 @@ const userController = {
   getUserById({ params }, res) {
     User.findOne({ _id: params.id })
       .populate({
-        path: 'thought',
+        path: 'thoughts',
         select: '-__v'
       })
       .select('-__v')
@@ -57,7 +60,39 @@ const userController = {
     User.findOneAndDelete({ _id: params.id })
       .then(dbUserData => res.json(dbUserData))
       .catch(err => res.json(err));
-  }
+  },
+
+  // FRIENDS
+
+  // get all friends
+  getAllFriend(req, res) {
+    User.find({})
+      .populate({
+        path: 'friends',
+        select: '-__v'
+      })
+      .select('-__v')
+      .sort({ _id: -1 })
+      .then(dbUserData => res.json(dbUserData))
+      .catch(err => {
+        console.log(err);
+        res.sendStatus(400);
+      });
+  },
+
+  // create a friend
+  createFriend({ body }, res) {
+    User.create(body)
+      .then(dbUserData => res.json(dbUserData))
+      .catch(err => res.json(err));
+  },
+
+  // delete a friend
+  deleteFriend({ params }, res) {
+    User.findOneAndDelete({ _id: params.id }, {$pull: {friends: {_id :params.friend_id}}})
+      .then(dbUserData => res.json(dbUserData))
+      .catch(err => res.json(err));
+  },
 };
 
 module.exports = userController;
